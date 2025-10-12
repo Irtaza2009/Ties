@@ -32,10 +32,16 @@ const ai = {
 
 const directionInterval = 5000;
 let lastDirectionTime = 0;
+let lastAIDirectionTime = 0; // Track last AI direction change
 
 const keys = {};
 window.addEventListener('keydown', (e) => keys[e.key] = true);
 window.addEventListener('keyup', (e) => keys[e.key] = false);
+
+let speedMultiplier = 1;
+let lastSpeedIncrease = 0;
+const speedIncreaseInterval = 3000; // ms
+const speedStep = 0.1; // how much to increase each interval
 
 function updatePlayer(time) {
   if (time - lastDirectionTime > directionInterval) {
@@ -57,9 +63,9 @@ function updatePlayer(time) {
       dx /= length;
       dy /= length;
 
-      const speed = 2;
-      player.vx = dx * speed;
-      player.vy = dy * speed;
+      const baseSpeed = 2;
+      player.vx = dx * baseSpeed * speedMultiplier;
+      player.vy = dy * baseSpeed * speedMultiplier;
 
       lockDirectionChange(time);
     }
@@ -77,12 +83,30 @@ function lockDirectionChange(time) {
   lastDirectionTime = time;
 }
 
-function updateAI() {
+function updateAI(time) {
   ai.x += ai.vx;
   ai.y += ai.vy;
 
   ai.vx += (Math.random() - 0.5) * 0.05;
   ai.vy += (Math.random() - 0.5) * 0.05;
+
+  // change AI direction every 5 seconds
+  if (time - lastAIDirectionTime > directionInterval) {
+    // pick a random direction
+    const angle = Math.random() * Math.PI * 2;
+    const baseSpeed = 1.5 * speedMultiplier;
+    ai.vx = Math.cos(angle) * baseSpeed;
+    ai.vy = Math.sin(angle) * baseSpeed;
+    lastAIDirectionTime = time;
+  }
+
+  // gradually increase AI speed
+  const aiSpeed = Math.sqrt(ai.vx * ai.vx + ai.vy * ai.vy);
+  const maxAISpeed = 2 * speedMultiplier;
+  if (aiSpeed > maxAISpeed) {
+    ai.vx *= maxAISpeed / aiSpeed;
+    ai.vy *= maxAISpeed / aiSpeed;
+  }
 
   checkBounce(ai);
 }
@@ -218,8 +242,14 @@ function restartGame() {
   ai.tiesCount = 0;
 
   lastDirectionTime = 0;
+  lastAIDirectionTime = 0; // reset AI direction timer
   gameEnded = false;
   gameoverDiv.classList.add('hidden');
+
+  // reset speed
+  speedMultiplier = 1;
+  lastSpeedIncrease = 0;
+
   gameLoop(0);
 }
 
@@ -230,10 +260,15 @@ function gameLoop(time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawCircle();
 
-  updatePlayer(time);
-  updateAI();
+  // gradually increase speed
+  if (time - lastSpeedIncrease > speedIncreaseInterval) {
+    speedMultiplier += speedStep;
+    lastSpeedIncrease = time;
+  }
 
-  // check for tie cuts
+  updatePlayer(time);
+  updateAI(time);
+
   checkTieCuts(player, ai); // ai cuts player's ties
   checkTieCuts(ai, player); // player cuts ai's ties
 
