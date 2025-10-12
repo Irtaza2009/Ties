@@ -200,8 +200,11 @@ function drawTies(ball) {
 const gameoverDiv = document.getElementById('gameover');
 const gameoverText = document.getElementById('gameover-text');
 const restartBtn = document.getElementById('restart-btn');
+const startPopup = document.getElementById('start-popup');
+const startBtn = document.getElementById('start-btn');
 
 let gameEnded = false;
+let gameStarted = false;
 
 function checkWinLose() {
   // start checking if both have at least one tie
@@ -244,6 +247,7 @@ function restartGame() {
   lastDirectionTime = 0;
   lastAIDirectionTime = 0; // reset AI direction timer
   gameEnded = false;
+  gameStarted = true;
   gameoverDiv.classList.add('hidden');
 
   // reset speed
@@ -255,7 +259,15 @@ function restartGame() {
 
 restartBtn.addEventListener('click', restartGame);
 
+startBtn.addEventListener('click', () => {
+  startPopup.classList.add('hidden');
+  gameStarted = true;
+  gameLoop(0);
+});
+
+
 function gameLoop(time) {
+  if (!gameStarted) return;
   if (gameEnded) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawCircle();

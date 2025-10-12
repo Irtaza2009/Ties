@@ -72,3 +72,13 @@ canvas {
 .hidden {
     display: none;
 }
+
+#start-popup {
+    z-index: 20;
+    font-size: 1.5rem;
+}
+#start-popup ul {
+    font-size: 1.2rem;
+    text-align: left;
+    letter-spacing: 0.1em;
+}

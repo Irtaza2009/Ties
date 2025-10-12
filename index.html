@@ -13,6 +13,24 @@
   <body>
     <h1 class="heading">TIES</h1>
     <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <div id="start-popup" class="popup">
+      <div>
+        <strong>How to Play</strong><br />
+        <ul>
+          <li>
+            Every 5 seconds, you can change the direction using the arrow keys.
+          </li>
+          <li>Bounce off the arena edge to create "ties".</li>
+          <li>Cut the enemy's ties by hitting them.</li>
+          <li>Protect your own ties from being cut.</li>
+          <li>If you have ties and the enemy has none, you win.</li>
+          <li>If the enemy has ties and you have none, you lose.</li>
+        </ul>
+
+        Good luck!
+      </div>
+      <button id="start-btn">Start Game</button>
+    </div>
     <div id="gameover" class="popup hidden">
       <div id="gameover-text"></div>
       <button id="restart-btn">Restart</button>
