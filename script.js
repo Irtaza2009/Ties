@@ -14,7 +14,8 @@ const player = {
   vy: 0,
   canChangeDir: false,
   glow: false,
-  ties: [] // tie lines
+  ties: [],
+  tiesCount: 0
 };
 
 // ai ball
@@ -25,10 +26,11 @@ const ai = {
   color: 'red',
   vx: 1.5,
   vy: 1,
-  ties: [] 
+  ties: [],
+  tiesCount: 0
 };
 
-const directionInterval = 2000;
+const directionInterval = 5000;
 let lastDirectionTime = 0;
 
 const keys = {};
@@ -110,6 +112,7 @@ function checkBounce(ball) {
       x1: impactX,
       y1: impactY
     });
+    ball.tiesCount = ball.tiesCount + 1;
   }
 }
 
@@ -170,7 +173,60 @@ function drawTies(ball) {
   ctx.stroke();
 }
 
+const gameoverDiv = document.getElementById('gameover');
+const gameoverText = document.getElementById('gameover-text');
+const restartBtn = document.getElementById('restart-btn');
+
+let gameEnded = false;
+
+function checkWinLose() {
+  // start checking if both have at least one tie
+  if (player.tiesCount === 0 || ai.tiesCount === 0) return;
+
+  if (!gameEnded) {
+    if (player.ties.length > 0 && ai.ties.length === 0) {
+      showGameover('You Win!');
+      gameEnded = true;
+    } else if (ai.ties.length > 0 && player.ties.length === 0) {
+      showGameover('You Lose!');
+      gameEnded = true;
+    }
+  }
+}
+
+function showGameover(text) {
+  gameoverText.textContent = text;
+  gameoverDiv.classList.remove('hidden');
+}
+
+function restartGame() {
+  // reset positions
+  player.x = center.x + 100;
+  player.y = center.y;
+  player.vx = 2;
+  player.vy = 0;
+  player.ties = [];
+  player.tiesCount = 0;
+  player.canChangeDir = false;
+  player.glow = false;
+
+  ai.x = center.x - 100;
+  ai.y = center.y;
+  ai.vx = 1.5;
+  ai.vy = 1;
+  ai.ties = [];
+  ai.tiesCount = 0;
+
+  lastDirectionTime = 0;
+  gameEnded = false;
+  gameoverDiv.classList.add('hidden');
+  gameLoop(0);
+}
+
+restartBtn.addEventListener('click', restartGame);
+
 function gameLoop(time) {
+  if (gameEnded) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawCircle();
 
@@ -186,7 +242,9 @@ function gameLoop(time) {
   drawBall(player);
   drawBall(ai);
 
-  requestAnimationFrame(gameLoop);
+  checkWinLose();
+
+  if (!gameEnded) requestAnimationFrame(gameLoop);
 }
 
 gameLoop(0);

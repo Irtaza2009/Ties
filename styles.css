@@ -33,3 +33,42 @@ canvas {
     z-index: 2;
     pointer-events: none;
 }
+
+.popup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #222;
+    border: 3px solid #00ff99;
+    border-radius: 16px;
+    padding: 40px 32px;
+    color: #fff;
+    font-family: 'Nordic Light', 'Press Start 2P', cursive;
+    font-size: 2rem;
+    text-align: center;
+    z-index: 10;
+    box-shadow: 0 0 32px #00ff99;
+}
+
+.popup button {
+    margin-top: 24px;
+    font-size: 1.2rem;
+    padding: 10px 32px;
+    border-radius: 8px;
+    border: none;
+    background: #00ff99;
+    color: #222;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.popup button:hover {
+    background: #00cc77;
+}
+
+.hidden {
+    display: none;
+}
