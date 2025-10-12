@@ -4,6 +4,25 @@ const ctx = canvas.getContext('2d');
 const center = { x: canvas.width / 2, y: canvas.height / 2 };
 const arenaRadius = 250;
 
+// audio
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// tone
+function playNote(frequency, duration = 0.2) {
+  const oscillator = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  
+  oscillator.type = 'triangle'; // 'sine', 'square', 'sawtooth', 'triangle'
+  oscillator.frequency.value = frequency;
+
+  oscillator.connect(gain);
+  gain.connect(audioCtx.destination);
+  
+  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  oscillator.start();
+  oscillator.stop(audioCtx.currentTime + duration);
+}
+
 // player ball
 const player = {
   x: center.x + 100,
@@ -130,6 +149,10 @@ function checkBounce(ball) {
     const overlap = dist + ball.radius - arenaRadius;
     ball.x -= nx * overlap;
     ball.y -= ny * overlap;
+
+    const notes = [220, 247, 262, 294, 330, 349, 392];
+    const note = notes[Math.floor(Math.random() * notes.length)];
+    playNote(note);
 
     // tie line that follows the ball 
     ball.ties.push({
