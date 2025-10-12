@@ -10,9 +10,10 @@ const player = {
     y: center.y,
     radius: 10,
     color: "lime",
-    vx: 0,
+    vx: 2,
     vy: 0,
-    speed: 2,
+    canChangeDir: false,
+    glow: false
 };
 
 // ai ball
@@ -25,25 +26,57 @@ const ai = {
     vy: 1
 };
 
-const keys = {};
+// direction change interval
+const directionInterval = 5000; // 5s
+let lastDirectionTime = 0; 
 
+const keys = {};
 window.addEventListener('keydown', (e) => keys[e.key] = true);
 window.addEventListener('keyup', (e) => keys[e.key] = false);
 
-function updatePlayer() {
-    if (keys['ArrowUp']) player.vy -= 0.1;
-    if (keys['ArrowDown']) player.vy += 0.1;
-    if (keys['ArrowLeft']) player.vx -= 0.1;
-    if (keys['ArrowRight']) player.vx += 0.1;
+function updatePlayer(time) {
+
+    // direction change every interval
+    if (time - lastDirectionTime > directionInterval) {
+        player.canChangeDir = true;
+        player.glow = true;
+    }
+
+    if (player.canChangeDir) {
+        let dx = 0;
+        let dy = 0;
+
+        if (keys['ArrowUp']) dy -= 1;
+        if (keys['ArrowDown']) dy += 1;
+        if (keys['ArrowLeft']) dx -= 1;
+        if (keys['ArrowRight']) dx += 1;
+
+        // if any direction pressed
+        if (dx !== 0 || dy !== 0) {
+
+            // normalise vector (so diagonals aren't faster)
+            const length = Math.sqrt(dx * dx + dy * dy);
+            dx /= length;
+            dy /= length;
+
+            const speed = 2;
+            player.vx = dx * speed;
+            player.vy = dy * speed;
+
+            lockDirectionChange(time);
+        }
+    }
 
     player.x += player.vx;
     player.y += player.vy;
 
-    // friction
-    player.vx *= 0.98;
-    player.vy *= 0.98;
-
     checkBounce(player);
+}
+
+function lockDirectionChange(time) {
+    player.canChangeDir = false;
+    player.glow = false;
+    lastDirectionTime = time;
 }
 
 function updateAI() {
@@ -93,13 +126,24 @@ function drawBall(ball) {
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     ctx.fillStyle = ball.color;
     ctx.fill();
+
+    if (ball.glow) {
+        ctx.shadowColor = ball.color;
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius + 3, 0, Math.PI * 2);
+        ctx.strokeStyle = ball.color;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+    }
 }
 
-function gameLoop() {
+function gameLoop(time) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawCircle();
 
-    updatePlayer();
+    updatePlayer(time);
     updateAI();
 
     drawBall(player);
@@ -108,4 +152,4 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-gameLoop();
+gameLoop(0);
