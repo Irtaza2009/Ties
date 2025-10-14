@@ -124,7 +124,7 @@ function updatePlayer(time) {
       dx /= length;
       dy /= length;
 
-      const baseSpeed = 2 * (arenaRadius / 500); // scale with arena size
+      const baseSpeed = (arenaRadius / 250) * 2; // scale with arena size
       player.vx = dx * baseSpeed * speedMultiplier;
       player.vy = dy * baseSpeed * speedMultiplier;
 
