@@ -10,10 +10,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 100svh;
+    touch-action: none;
 }
 
 canvas {
+    width: 100vw;
+    height: 100vh;
+    display: block;
     background: transparent;
     margin-top: 50px;
 }
@@ -92,3 +96,30 @@ canvas {
   touch-action: none;
   background: transparent;
 }
+
+@media (max-width: 768px) {
+  #joystick-zone {
+    height: 50vh;
+  }
+
+  #start-popup {
+    width: 80vw;
+    font-size: 1.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  #start-popup ul {
+    font-size: 1.2rem;
+  }
+
+  .popup {
+    width: 50vw;
+    font-size: 1.5rem;
+    padding: 20px;
+  }
+
+  .heading {
+    font-size: 2.5rem;
+  }
+}
+

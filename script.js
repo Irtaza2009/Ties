@@ -9,31 +9,8 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const center = { x: canvas.width / 2, y: canvas.height / 2 };
-const arenaRadius = 250;
-
-// audio
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-// tone
-function playNote(frequency, duration = 0.2) {
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  const filter = audioCtx.createBiquadFilter();
-
-  osc.type = "triangle";
-  osc.frequency.value = frequency;
-  filter.type = "lowpass";
-  filter.frequency.value = 800 + Math.random() * 400;
-  gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  osc.start();
-  osc.stop(audioCtx.currentTime + duration);
-}
+let arenaRadius;
+let center = { x: 0, y: 0 };
 
 // player ball
 const player = {
@@ -60,6 +37,54 @@ const ai = {
   ties: [],
   tiesCount: 0,
 };
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const minDimension = Math.min(canvas.width, canvas.height);
+  arenaRadius = minDimension * 0.4; // 80% of smaller screen side / 2
+  center = { x: canvas.width / 2, y: canvas.height / 2 };
+
+  // reposition player and AI when resizing
+  player.x = center.x + arenaRadius * 0.4;
+  player.y = center.y;
+  ai.x = center.x - arenaRadius * 0.4;
+  ai.y = center.y;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+function scaleGameObjects() {
+  const scale = Math.min(canvas.width, canvas.height) / 600; // base 600px
+  player.radius = 10 * scale;
+  ai.radius = 10 * scale;
+}
+scaleGameObjects();
+
+
+// audio
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// tone
+function playNote(frequency, duration = 0.2) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+
+  osc.type = "triangle";
+  osc.frequency.value = frequency;
+  filter.type = "lowpass";
+  filter.frequency.value = 800 + Math.random() * 400;
+  gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
 
 const directionInterval = 5000;
 let lastDirectionTime = 0;
@@ -99,7 +124,7 @@ function updatePlayer(time) {
       dx /= length;
       dy /= length;
 
-      const baseSpeed = 2;
+      const baseSpeed = 2 * (arenaRadius / 250); // scale with arena size
       player.vx = dx * baseSpeed * speedMultiplier;
       player.vy = dy * baseSpeed * speedMultiplier;
 
@@ -409,3 +434,11 @@ function gameLoop(time) {
 }
 
 gameLoop(0);
+
+// portrait to landscape orientaion change
+window.addEventListener("orientationchange", () => {
+  setTimeout(() => {
+    resizeCanvas();
+    scaleGameObjects();
+  }, 300);
+});
