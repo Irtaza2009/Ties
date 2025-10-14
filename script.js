@@ -6,11 +6,6 @@
 // - mobile controls
 // - different arena shapes
 
-// Done:
-// - screen shake on tie cut
-// - pulse effect on bounce
-// - sound on bounce
-
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -93,6 +88,11 @@ function updatePlayer(time) {
     if (keys["ArrowDown"]) dy += 1;
     if (keys["ArrowLeft"]) dx -= 1;
     if (keys["ArrowRight"]) dx += 1;
+
+    if (joystick.active) {
+      dx = joystick.dx;
+      dy = joystick.dy;
+    }
 
     if (dx !== 0 || dy !== 0) {
       const length = Math.sqrt(dx * dx + dy * dy);
@@ -345,6 +345,35 @@ startBtn.addEventListener("click", () => {
   gameStarted = true;
   gameLoop(0);
 });
+
+// joystick for mobile
+let joystick = {active: false, startX: 0, startY: 0, dx: 0, dy: 0};
+const joystickZone = document.createElement("div");
+joystickZone.id = "joystick-zone";
+document.body.appendChild(joystickZone);
+
+joystickZone.addEventListener("touchstart", (e) => {
+  const t = e.touches[0];
+  joystick.active = true;
+  joystick.startX = t.clientX;
+  joystick.startY = t.clientY;
+});
+
+joystickZone.addEventListener("touchmove", (e) => {
+  if (!joystick.active) return;
+  const t = e.touches[0];
+  joystick.dx = t.clientX - joystick.startX;
+  joystick.dy = t.clientY - joystick.startY;
+});
+
+joystickZone.addEventListener("touchend", (e) => {
+  joystick.active = false;
+  joystick.dx = 0;
+  joystick.dy = 0;
+});
+
+
+
 
 function gameLoop(time) {
   if (!gameStarted) return;
