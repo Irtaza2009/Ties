@@ -1,10 +1,13 @@
 // TODO:
-// - sound effects on tie cut
 // - improve ai movement
 // - leaderboard
 // - multiplayer
-// - mobile controls
 // - different arena shapes
+
+// Done:
+// - sound effects on tie cut
+// - ambient hum
+// - particles on bounce for visual feedback 
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -62,6 +65,8 @@ function scaleGameObjects() {
 }
 scaleGameObjects();
 
+const particles = [];
+
 
 // audio
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -84,6 +89,68 @@ function playNote(frequency, duration = 0.2) {
 
   osc.start();
   osc.stop(audioCtx.currentTime + duration);
+}
+
+// random pitch
+function varyPitch(baseFreq, range = 0.1)
+{
+  return baseFreq * (1 + (Math.random() * 2 - 1) * range);
+}
+
+// tie cut sound (metallic for now)
+function playCutSound() {
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc1.type = "sawtooth";
+  osc2.type = "square";
+  osc1.frequency.value = varyPitch(400, 0.15);
+  osc2.frequency.value = varyPitch(446, 0.15);
+
+  gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+
+  osc1.connect(gain);
+  osc2.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc1.start();
+  osc2.start();
+  osc1.stop(audioCtx.currentTime + 0.3);
+  osc2.stop(audioCtx.currentTime + 0.3);
+}
+
+// winning/losing sound effects
+function playWinSound() {
+  const freqs = [523, 659, 784]; // C5, E5, G5
+  freqs.forEach((f, i) => setTimeout(() => playNote(f, 0.3), i * 200));
+}
+
+function playLoseSound() {
+  const freqs = [392, 294, 196]; // G4, D4, G3
+  freqs.forEach((f, i) => setTimeout(() => playNote(f, 0.3), i * 200));
+}
+
+// ambient hum
+let humOsc = null;
+function startAmbientHum() {
+  if (humOsc) return;
+  humOsc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  humOsc.type = "sine";
+  humOsc.frequency.value = 80;
+  gain.gain.value = 0.05;
+  humOsc.connect(gain).connect(audioCtx.destination);
+  humOsc.start();
+}
+
+function stopAmbientHum() {
+  if (humOsc) {
+    humOsc.stop();
+    humOsc.disconnect();
+    humOsc = null;
+  }
 }
 
 const directionInterval = 5000;
@@ -203,6 +270,14 @@ function checkBounce(ball) {
       y1: impactY,
     });
     ball.tiesCount = ball.tiesCount + 1;
+
+    particles.push({
+      x: impactX,
+      y: impactY,
+      radius: 6,
+      life: 1,
+      color: ball.color,
+    });
   }
 }
 
@@ -251,6 +326,7 @@ function checkTieCuts(ball, otherBall) {
   if (tieCut) {
     shakeIntensity = 10;
     shouldShake = true;
+    playCutSound();
   }
 }
 
@@ -303,6 +379,23 @@ function drawTies(ball) {
   ctx.stroke();
 }
 
+function drawParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    ctx.beginPath();
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color || "white";
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    p.life *= 0.9;
+    p.radius *= 0.95;
+    if (p.life < 0.05) {
+      particles.splice(i, 1);
+    }
+  }
+}
+
 const gameoverDiv = document.getElementById("gameover");
 const gameoverText = document.getElementById("gameover-text");
 const restartBtn = document.getElementById("restart-btn");
@@ -330,6 +423,12 @@ function checkWinLose() {
 function showGameover(text) {
   gameoverText.textContent = text;
   gameoverDiv.classList.remove("hidden");
+  stopAmbientHum();
+  if (text.includes("Win")) {
+    playWinSound();
+  } else {
+    playLoseSound();
+  }
 }
 
 function restartGame() {
@@ -360,6 +459,8 @@ function restartGame() {
   speedMultiplier = 1;
   lastSpeedIncrease = 0;
 
+  startAmbientHum();
+
   gameLoop(0);
 }
 
@@ -368,6 +469,7 @@ restartBtn.addEventListener("click", restartGame);
 startBtn.addEventListener("click", () => {
   startPopup.classList.add("hidden");
   gameStarted = true;
+  startAmbientHum();
   gameLoop(0);
 });
 
@@ -425,6 +527,7 @@ function gameLoop(time) {
   drawBackground();
   drawTies(player);
   drawTies(ai);
+  //drawParticles();
   drawBall(player);
   drawBall(ai);
 
