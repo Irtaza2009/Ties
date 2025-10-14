@@ -1,5 +1,18 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+// TODO:
+// - sound effects on tie cut
+// - improve ai movement
+// - leaderboard
+// - multiplayer
+// - mobile controls
+// - different arena shapes
+
+// Done:
+// - screen shake on tie cut
+// - pulse effect on bounce
+// - sound on bounce
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
 const center = { x: canvas.width / 2, y: canvas.height / 2 };
 const arenaRadius = 250;
@@ -9,18 +22,22 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 // tone
 function playNote(frequency, duration = 0.2) {
-  const oscillator = audioCtx.createOscillator();
+  const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  
-  oscillator.type = 'triangle'; // 'sine', 'square', 'sawtooth', 'triangle'
-  oscillator.frequency.value = frequency;
+  const filter = audioCtx.createBiquadFilter();
 
-  oscillator.connect(gain);
+  osc.type = "triangle";
+  osc.frequency.value = frequency;
+  filter.type = "lowpass";
+  filter.frequency.value = 800 + Math.random() * 400;
+  gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+
+  osc.connect(filter);
+  filter.connect(gain);
   gain.connect(audioCtx.destination);
-  
-  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-  oscillator.start();
-  oscillator.stop(audioCtx.currentTime + duration);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
 }
 
 // player ball
@@ -28,13 +45,13 @@ const player = {
   x: center.x + 100,
   y: center.y,
   radius: 10,
-  color: 'lime',
+  color: "lime",
   vx: 2,
   vy: 0,
   canChangeDir: false,
   glow: false,
   ties: [],
-  tiesCount: 0
+  tiesCount: 0,
 };
 
 // ai ball
@@ -42,11 +59,11 @@ const ai = {
   x: center.x - 100,
   y: center.y,
   radius: 10,
-  color: 'red',
+  color: "red",
   vx: 1.5,
   vy: 1,
   ties: [],
-  tiesCount: 0
+  tiesCount: 0,
 };
 
 const directionInterval = 5000;
@@ -54,8 +71,8 @@ let lastDirectionTime = 0;
 let lastAIDirectionTime = 0; // Track last AI direction change
 
 const keys = {};
-window.addEventListener('keydown', (e) => keys[e.key] = true);
-window.addEventListener('keyup', (e) => keys[e.key] = false);
+window.addEventListener("keydown", (e) => (keys[e.key] = true));
+window.addEventListener("keyup", (e) => (keys[e.key] = false));
 
 let speedMultiplier = 1;
 let lastSpeedIncrease = 0;
@@ -72,10 +89,10 @@ function updatePlayer(time) {
     let dx = 0;
     let dy = 0;
 
-    if (keys['ArrowUp']) dy -= 1;
-    if (keys['ArrowDown']) dy += 1;
-    if (keys['ArrowLeft']) dx -= 1;
-    if (keys['ArrowRight']) dx += 1;
+    if (keys["ArrowUp"]) dy -= 1;
+    if (keys["ArrowDown"]) dy += 1;
+    if (keys["ArrowLeft"]) dx -= 1;
+    if (keys["ArrowRight"]) dx += 1;
 
     if (dx !== 0 || dy !== 0) {
       const length = Math.sqrt(dx * dx + dy * dy);
@@ -109,9 +126,9 @@ function updateAI(time) {
   ai.vx += (Math.random() - 0.5) * 0.05;
   ai.vy += (Math.random() - 0.5) * 0.05;
 
-  // change AI direction every 5 seconds
+  // ai direction change every 5 seconds
   if (time - lastAIDirectionTime > directionInterval) {
-    // pick a random direction
+    // random direction
     const angle = Math.random() * Math.PI * 2;
     const baseSpeed = 1.5 * speedMultiplier;
     ai.vx = Math.cos(angle) * baseSpeed;
@@ -153,11 +170,12 @@ function checkBounce(ball) {
     const notes = [220, 247, 262, 294, 330, 349, 392];
     const note = notes[Math.floor(Math.random() * notes.length)];
     playNote(note);
+    pulse = 1; // pulse
 
-    // tie line that follows the ball 
+    // tie line that follows the ball
     ball.ties.push({
       x1: impactX,
-      y1: impactY
+      y1: impactY,
     });
     ball.tiesCount = ball.tiesCount + 1;
   }
@@ -176,17 +194,57 @@ function ballIntersectsLine(ball, x1, y1, x2, y2) {
   return distSq <= ball.radius * ball.radius;
 }
 
+// screen shake
+let shakeIntensity = 0;
+let shouldShake = false;
+
+function shakeScreen() {
+  if (shouldShake && shakeIntensity > 0.5) {
+    const dx = (Math.random() - 0.5) * shakeIntensity;
+    const dy = (Math.random() - 0.5) * shakeIntensity;
+    ctx.setTransform(1, 0, 0, 1, dx, dy);
+    shakeIntensity *= 0.9;
+    if (shakeIntensity < 0.5) {
+      shakeIntensity = 0;
+      shouldShake = false;
+    }
+  } else {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+}
+
 // remove ties cut
 function checkTieCuts(ball, otherBall) {
-  ball.ties = ball.ties.filter(tie => {
-    return !ballIntersectsLine(otherBall, tie.x1, tie.y1, ball.x, ball.y);
+  let tieCut = false;
+  ball.ties = ball.ties.filter((tie) => {
+    if (ballIntersectsLine(otherBall, tie.x1, tie.y1, ball.x, ball.y)) {
+      tieCut = true;
+      return false;
+    }
+    return true;
   });
+  if (tieCut) {
+    shakeIntensity = 10;
+    shouldShake = true;
+  }
+}
+
+let pulse = 0;
+function drawBackground() {
+  ctx.fillStyle = `rgba(0, 0, 0, ${0.2 + pulse * 0.05})`;
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, arenaRadius, 0, Math.PI * 2);
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fill();
+  pulse *= 0.9;
 }
 
 function drawCircle() {
   ctx.beginPath();
   ctx.arc(center.x, center.y, arenaRadius, 0, Math.PI * 2);
-  ctx.strokeStyle = 'white';
+  ctx.strokeStyle = "white";
   ctx.lineWidth = 2;
   ctx.stroke();
 }
@@ -220,11 +278,11 @@ function drawTies(ball) {
   ctx.stroke();
 }
 
-const gameoverDiv = document.getElementById('gameover');
-const gameoverText = document.getElementById('gameover-text');
-const restartBtn = document.getElementById('restart-btn');
-const startPopup = document.getElementById('start-popup');
-const startBtn = document.getElementById('start-btn');
+const gameoverDiv = document.getElementById("gameover");
+const gameoverText = document.getElementById("gameover-text");
+const restartBtn = document.getElementById("restart-btn");
+const startPopup = document.getElementById("start-popup");
+const startBtn = document.getElementById("start-btn");
 
 let gameEnded = false;
 let gameStarted = false;
@@ -235,10 +293,10 @@ function checkWinLose() {
 
   if (!gameEnded) {
     if (player.ties.length > 0 && ai.ties.length === 0) {
-      showGameover('You Win!');
+      showGameover("You Win!");
       gameEnded = true;
     } else if (ai.ties.length > 0 && player.ties.length === 0) {
-      showGameover('You Lose!');
+      showGameover("You Lose!");
       gameEnded = true;
     }
   }
@@ -246,7 +304,7 @@ function checkWinLose() {
 
 function showGameover(text) {
   gameoverText.textContent = text;
-  gameoverDiv.classList.remove('hidden');
+  gameoverDiv.classList.remove("hidden");
 }
 
 function restartGame() {
@@ -271,7 +329,7 @@ function restartGame() {
   lastAIDirectionTime = 0; // reset AI direction timer
   gameEnded = false;
   gameStarted = true;
-  gameoverDiv.classList.add('hidden');
+  gameoverDiv.classList.add("hidden");
 
   // reset speed
   speedMultiplier = 1;
@@ -280,18 +338,21 @@ function restartGame() {
   gameLoop(0);
 }
 
-restartBtn.addEventListener('click', restartGame);
+restartBtn.addEventListener("click", restartGame);
 
-startBtn.addEventListener('click', () => {
-  startPopup.classList.add('hidden');
+startBtn.addEventListener("click", () => {
+  startPopup.classList.add("hidden");
   gameStarted = true;
   gameLoop(0);
 });
 
-
 function gameLoop(time) {
   if (!gameStarted) return;
   if (gameEnded) return;
+
+  shakeScreen();
+ 
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawCircle();
 
@@ -307,6 +368,7 @@ function gameLoop(time) {
   checkTieCuts(player, ai); // ai cuts player's ties
   checkTieCuts(ai, player); // player cuts ai's ties
 
+  drawBackground();
   drawTies(player);
   drawTies(ai);
   drawBall(player);
