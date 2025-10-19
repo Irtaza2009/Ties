@@ -1,15 +1,17 @@
 # Ties
 
 **Ties** is a physics-based arena (puzzle?) game built using **HTML, CSS, and JavaScript**.  
+
 Two balls, one controlled by you, and one by an AI, bounce around inside a circular arena.  
+
 Each time a ball hits the arena’s boundary, it creates a glowing **“tie”**, a line tethered between the point of impact and the ball.
+
+I also used the web audio API to create a unique sound upon each bounce! And also used the API to create a sound for the tie cut!
 
 Your goal?  
 **Cut all of your opponent’s ties before they cut yours.**
 
-Made for **[Daydream Global](https://itch.io/jam/daydream-global)**, a _game jam_ hosted by **[Hack Club](https://hackclub.com/)**!
-
-**Play at:** https://irtaza.itch.io/ties
+**Play at:** https://irtaza.xyz/Ties
 
 ## Gameplay
 
@@ -28,10 +30,15 @@ Made for **[Daydream Global](https://itch.io/jam/daydream-global)**, a _game jam
 
 ## Controls
 
+### Mobile phone
+If playing on a **mobile phone**, **swipe in the direction you want to move**, when the ball glows!
+
+### Keyboard
+
 | Action              | Keys                                                   |
 | ------------------- | ------------------------------------------------------ |
 | Change Direction    | ⬆️ ⬇️ ⬅️ ➡️ (Arrow Keys)                               |
-| Diagonal Directions | Press two arrows together (e.g. ⬆️ + ➡️ for northeast) |
+| Diagonal Directions | Press two arrow keys together (e.g. ⬆️ + ➡️ for northeast) |
 
 Every **5 seconds**, your ball briefly glows, and that’s when you can change direction.  
 Between direction windows, your ball continues moving in its last chosen direction.
