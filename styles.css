@@ -36,6 +36,7 @@ canvas {
     text-align: center;
     z-index: 2;
     pointer-events: none;
+    color: #fff;
 }
 
 .popup {
@@ -98,6 +99,52 @@ canvas {
   background: transparent;
 }
 
+#direction-timer {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  z-index: 5;
+}
+
+#timer-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00ff99, #00cc77);
+  transition: width 0.5s linear;
+  border-radius: 5px;
+}
+
+footer {
+  position: fixed;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  color: #666;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  z-index: 1;
+  pointer-events: none;
+}
+
+footer a {
+  color: #00ff99;
+  text-decoration: none;
+  pointer-events: auto;
+  transition: color 0.3s;
+}
+
+footer a:hover {
+  color: #00cc77;
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   #joystick-zone {
     height: 50vh;
@@ -121,5 +168,11 @@ canvas {
 
   .heading {
     font-size: 2.5rem;
+    top: 3%;
+  }
+
+  footer {
+    font-size: 0.8rem;
+    bottom: 5px;
   }
 }

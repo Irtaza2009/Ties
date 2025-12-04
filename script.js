@@ -522,6 +522,19 @@ function gameLoop(time) {
     lastSpeedIncrease = time;
   }
 
+  // update direction timer 
+  if (player.canChangeDir)
+  {
+    document.getElementById("timer-fill").style.width = "100%";
+    document.getElementById("timer-fill").style.background = "linear-gradient(90deg, #ff9900, #ffcc00)";
+  } else {
+    const timeSinceLastChange = time - lastDirectionTime;
+    const progress = Math.min(timeSinceLastChange / directionInterval * 100, 100);
+    document.getElementById("timer-fill").style.width = progress + "%";
+    document.getElementById("timer-fill").style.background = "linear-gradient(90deg, #00ff99, #00cc77)";
+  }
+
+
   updatePlayer(time);
   updateAI(time);
 
