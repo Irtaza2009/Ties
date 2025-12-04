@@ -37,8 +37,8 @@ If playing on a **mobile phone**, **swipe in the direction you want to move**, w
 
 | Action              | Keys                                                   |
 | ------------------- | ------------------------------------------------------ |
-| Change Direction    | ⬆️ ⬇️ ⬅️ ➡️ (Arrow Keys)                               |
-| Diagonal Directions | Press two arrow keys together (e.g. ⬆️ + ➡️ for northeast) |
+| Change Direction    | ⬆️ ⬇️ ⬅️ ➡️ (Arrow Keys) / W A S D keys                      |
+| Diagonal Directions | Press two arrow/WASD keys together (e.g. ⬆️/W + ➡️/D for northeast) |
 
 Every **5 seconds**, your ball briefly glows, and that’s when you can change direction.  
 Between direction windows, your ball continues moving in its last chosen direction.

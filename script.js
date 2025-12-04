@@ -180,6 +180,10 @@ function updatePlayer(time) {
     if (keys["ArrowDown"]) dy += 1;
     if (keys["ArrowLeft"]) dx -= 1;
     if (keys["ArrowRight"]) dx += 1;
+    if (keys["w"]) dy -= 1;
+    if (keys["s"]) dy += 1;
+    if (keys["a"]) dx -= 1;
+    if (keys["d"]) dx += 1;
 
     if (joystick.active) {
       dx = joystick.dx;
