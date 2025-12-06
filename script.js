@@ -8,6 +8,7 @@
 // - sound effects on tie cut
 // - ambient hum
 // - particles on bounce for visual feedback (but commented)
+// - direction timer progress bar
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
