@@ -283,6 +283,17 @@ function checkBounce(ball) {
       life: 1,
       color: ball.color,
     });
+
+    // update tie counter display
+    updateTieCounter(ball);
+  }
+}
+
+function updateTieCounter(ball) {
+  if (ball === player) {
+    document.getElementById("player-ties").innerHTML = `Total Ties: <b>${player.tiesCount}</b>`;
+  } else if (ball === ai) {
+    document.getElementById("ai-ties").innerHTML = `Total Enemy Ties: <b>${ai.tiesCount}</b>`;
   }
 }
 
@@ -463,6 +474,10 @@ function restartGame() {
   // reset speed
   speedMultiplier = 1;
   lastSpeedIncrease = 0;
+
+  // reset tie counters display
+  updateTieCounter(player);
+  updateTieCounter(ai);
 
   startAmbientHum();
 

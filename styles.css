@@ -22,6 +22,16 @@ canvas {
     margin-top: 70px;
 }
 
+.header-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    pointer-events: none;
+    z-index: 3;
+}
+
 .heading {
     font-family: 'Nordic Light', cursive;
     color: grey;
@@ -30,7 +40,7 @@ canvas {
     letter-spacing: 0.2em;
     width: 100%;
     position: absolute;
-    top: 1.005%;
+    top: 1%;
     left: 50%;
     transform: translateX(-50%);    
     text-align: center;
@@ -101,7 +111,7 @@ canvas {
 
 #direction-timer {
   position: fixed;
-  top: 1%;
+  top: 0.5%;
   left: 50%;
   transform: translateX(-50%);
   width: 200px;
@@ -146,6 +156,33 @@ footer a:hover {
   text-decoration: underline;
 }
 
+.tie-counter {
+  position: fixed;
+  top: 15%;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.2rem;
+  color: #fff;
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: 2px solid;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#player-ties {
+  left: 20px;
+  color:lime;
+  border-color: lime;
+}
+
+#ai-ties {
+  right: 20px;
+  color: red;
+  border-color: red;
+}
+
 @media (max-width: 768px) {
   #joystick-zone {
     height: 50vh;
@@ -175,5 +212,24 @@ footer a:hover {
   footer {
     font-size: 0.8rem;
     bottom: 5px;
+  }
+
+  .tie-counter {
+    font-size: 1rem;
+    top: 16%;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  #player-ties {
+    right: 80%;
+    left: 14px;
+    margin-bottom: 20px;
+  }
+
+  #ai-ties {
+    right: 80%;
+    left: 14px;
+    margin-top: 40px;
   }
 }
